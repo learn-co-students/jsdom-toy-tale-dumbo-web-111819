@@ -1,91 +1,109 @@
 let addToy = false
+// General Approach 
+// 1. Fetch data from a server
+// 2. Generate elements for the data
+// 3. Slap that on the DOM
+// 4. Add event listeners to make the page interactive
+// 5. Make changes that persist on the server without having to refresh the page
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  const addBtn = document.querySelector('#new-toy-btn')
-  const toyForm = document.querySelector('.container')
-  const toyCollection = document.querySelector('#toy-collection')
+const toysUrl = 'http://localhost:3000/toys'
+const addBtn = document.querySelector('#new-toy-btn')
+const toyForm = document.querySelector('.container')
+const toyCollectionDiv = document.querySelector("#toy-collection")
 
-
-  fetch('http://localhost:3000/toys') 
-    .then(r => r.json())
-    .then(addToys)
-
-  function addToys(toys) {
-    toys.forEach(function (toy){
-      createToyCard(toy)
-    })
+addBtn.addEventListener('click', () => {
+  // hide & seek with the form
+  addToy = !addToy
+  if (addToy) {
+    toyForm.style.display = 'block'
+  } else {
+    toyForm.style.display = 'none'
   }
-  
-  function createToyCard(toy){
-    let toyDiv = document.createElement('div') 
-    toyDiv.className = 'card'
-    toyDiv.innerHTML = `
-      <h2>${toy.name}</h2>
-      <img src=${toy.image} class="toy-avatar" />
-      <p>${toy.likes} Likes </p>
-      <button id=${toy.id} class="like-btn">Like <3</button>
-    `
-    toyCollection.append(toyDiv)
+})
 
-  }
+// initial fetch json -> forEach -> slapToyToPage(toy)
+fetch(toysUrl)
+  .then(r => r.json())
+  .then(toysArr => toysArr.forEach(toy => slapToyToPage(toy)))
 
-  toyCollection.addEventListener("click", (e) => {
-    if(typeof(e.target.id) === "number"){
-      increaseLikeCount(toy.id, toy.likes)
-    }
-  })
+toyForm.addEventListener("submit", function(e) {
+  // addEventListener to the form + preventDefault
+  // console.log(e.target) to get field names
+  // create const from e.target.field_name.value
+  e.preventDefault()
+  // console.log(e.target)
+  const toyName  = e.target.name.value
+  const toyImage = e.target.image.value
+  // console.log(name, image)
 
-  function increaseLikeCount(toyId, likes){
-    console.log(toyId, likes)
-    fetch(`http://localhost:3000/toys/${toyId}`, {
-      method: "PATCH",
+    fetch(toysUrl, {
+      method:  "POST", 
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json"
-      },
+      }, 
       body: JSON.stringify({
-        "likes": likes++
+        "name": toyName,
+        "image": toyImage,
+        "likes": 0
       })
     })
-  }
-
-  toyForm.addEventListener("submit", (e) => {
-    e.preventDefault()
-    let name = e.target.name.value
-    let image = e.target.image.value
-    postToy(name, image)
-  })
-  
-  function postToy(name, image) {
-    fetch("http://localhost:3000/toys", {
-      method: "POST",
-      headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-      },         
-      body: JSON.stringify({
-        "name": name,
-        "image": image,
-        "likes": 0
-      })        
-    })
-    .then(r => r.json())
-    .then(createToyCard)
-  }
-
-  addBtn.addEventListener('click', () => {
-    // hide & seek with the form
-    addToy = !addToy
-    if (addToy) {
-      toyForm.style.display = 'block'
-    } else {
-      toyForm.style.display = 'none'
-    }
-  })
-
-
+      .then(r => r.json())
+      .then(toy => slapToyToPage(toy))
 })
 
 
 
+function slapToyToPage(toy) {
+  // console.log(toy)
+  // locate/create target toyCollectionDiv
+  // create target cardDiv & attributes & append them to the div
+  // append cardDiv to toyCollectionDiv
+  const cardDiv = document.createElement("div")
+  cardDiv.className  = "card"
+    const h2           = document.createElement("h2")
+      h2.innerText     = toy.name
+    const img          = document.createElement("img")
+      img.className    = "toy-avatar"
+      img.src          = toy.image
+    const p            = document.createElement("p")
+      p.innerText      = toy.likes + " Likes"
+    const button       = document.createElement("button")
+      button.className = "like-btn"
+      button.innerText = "Like <3"
 
+  cardDiv.append(h2,img,p,button)
+  // console.log(cardDiv)
+  toyCollectionDiv.append(cardDiv)
+
+  button.addEventListener("click", function(e) {
+    increaseLikes(toy, p)
+  })
+  
+}
+
+function increaseLikes(toy, p) {
+  // args are toy obj + p tag containing #likes
+  // update toy.likes & fetch -> the server
+  // slap #
+
+  toy.likes += 1
+  console.log(toy.likes)
+  // p.innerText      = toy.likes + " Likes"
+
+  fetch(`${toysUrl}/${toy.id}`, {
+    method:  "PATCH", 
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    }, 
+    body: JSON.stringify({
+      "likes": toy.likes
+    })
+  })
+    .then(r => r.json())
+    .then(toy => { 
+      p.innerText      = toy.likes + " Likes"
+    })
+}
+  
