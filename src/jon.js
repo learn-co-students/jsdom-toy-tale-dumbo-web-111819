@@ -1,12 +1,11 @@
-const toyCollectionDiv = document.querySelector('#toy-collection')
-const addBtn = document.querySelector('#new-toy-btn')
-const toyForm = document.querySelector('.container')
-
-
+const toyCollection = document.querySelector('#toy-collection')
+const createToyBtn = document.querySelector('#new-toy-btn')
+const toyFormDiv = document.querySelector('.container')
+const toyForm = document.querySelector('.add-toy-form')
 //renders form when clicking initial 'add toy button'
-addBtn.addEventListener('click', (e)=>{
+createToyBtn.addEventListener('click', (e)=>{
     console.log(e)
-    toyForm.style.display = 'block'
+    toyFormDiv.style.display = 'block'
 })
 //fetches database data on page load
 fetch('http://localhost:3000/toys')
@@ -47,7 +46,7 @@ const addStuffToDom = (toy) => {
     toyButton.addEventListener('click', e =>{
         patchFetch(toy, toyCard)
     })
-    toyCollectionDiv.append(toyCard)
+    toyCollection.append(toyCard)
 }
 let patchFetch = (toy, toyCard) => {
     let likes = toyCard.querySelector('p span')
