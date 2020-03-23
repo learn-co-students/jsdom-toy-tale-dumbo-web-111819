@@ -86,3 +86,82 @@ body: JSON.stringify({
   "likes": <new number>
 })
 ```
+
+
+
+
+
+
+const addBtn = document.querySelector("#new-toy-btn")
+const toyForm = document.querySelector(".container")
+let addToy = false 
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  addBtn.addEventListener('click',() => {
+     addToy = !addToy
+    if (addToy) {
+      toyForm.style.display = 'block'
+    } else {
+      toyForm.style.display = 'none'
+    }
+  })
+  let toyDiv = document.getElementById("toy-collection")
+  
+  fetch ("http://localhost:3000/toys")
+  .then(r => r.json())
+  .then(function(toyList){
+    
+    toyList.forEach(toy => {
+      let toyList = document.createElement("div")
+      toyList.innerHTML = `<div class="card">
+      <h2>${toy.id}</h2>
+      <img src=${toy.image} class="toy-avatar" />
+      <p>4 ${toy.likes} </p>
+      <button class="like-btn">Likes <3</button>
+      </div>`
+      toyDiv.append(toyList)
+    })
+  })
+  
+  
+  
+  toyForm.addEventListener("submit", function(event){
+    event.preventDefault()
+  
+    
+    const toyImg = event.target.value
+    const toyName = event.target.value
+    
+    
+       fetch("http://localhost:3000/toys",{
+        method: "POST",
+        headers:{
+          "content-type":"application/json",
+          "accept":"application/json"
+        },
+        body: JSON.stringify({
+          name:toyName,
+          image:toyImg,
+          likes:0
+        })
+      })
+ 
+  
+    
+    .then(r => r.json())
+    .then(function(toyData ) {
+
+      let newToyDiv = document.createElement("div")
+      newToyDiv.innerHTML = `<div class="card">
+      <h2>${toyData.id}</h2>
+      <img src=${toyData.image} class="toy-avatar" />
+      <p>4 ${toyData.likes} </p>
+      <button class="like-btn">Likes <3</button>
+      </div>`
+      toyDiv.prepend(newToyDiv)
+    
+    })
+     
+        
+      })
+    })
